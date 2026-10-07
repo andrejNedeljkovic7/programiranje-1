@@ -11,7 +11,8 @@
  predstavljen s seznamom števil s plavajočo vejico, pomnoži z danim skalarjem.
 [*----------------------------------------------------------------------------*)
 
-let razteg _ _ = ()
+let razteg k v = List.map (fun x -> k *. x) v
+let razteg2 k v = List.map (( *. ) k) v
 
 let primer_vektorji_1 = razteg 2.0 [1.0; 2.0; 3.0]
 (* val primer_vektorji_1 : float list = [2.; 4.; 6.] *)
@@ -21,8 +22,8 @@ let primer_vektorji_1 = razteg 2.0 [1.0; 2.0; 3.0]
  vsoto dveh vektorjev.
 [*----------------------------------------------------------------------------*)
 
-let sestej _ _ = ()
-
+let sestej u v = List.map2 ((+.)) u v
+let sestej u v = List.map2 (fun x y -> x +. y) u v
 let primer_vektorji_2 = sestej [1.0; 2.0; 3.0] [4.0; 5.0; 6.0]
 (* val primer_vektorji_2 : float list = [5.; 7.; 9.] *)
 
@@ -35,8 +36,12 @@ let primer_vektorji_2 = sestej [1.0; 2.0; 3.0] [4.0; 5.0; 6.0]
 
 let vsota_seznama = List.fold_left (+.) 0.
 
-let skalarni_produkt _ _ = ()
-
+let skalarni_produkt v1 v2 = 
+  List.combine v1 v2
+  |> List.map (fun (x, y) -> x *. y)
+  |> vsota_seznama
+let skalarni_produkt2 v1 v2 = vsota_seznama (List.map2 ( *. ) v1 v2)
+let skalarni_produkt3 v1 v2 = List.map2 (( *. ) ) v1 v2 |> vsota_seznama
 let primer_vektorji_3 = skalarni_produkt [1.0; 2.0; 3.0] [4.0; 5.0; 6.0]
 (* val primer_vektorji_3 : float = 32. *)
 
@@ -45,7 +50,11 @@ let primer_vektorji_3 = skalarni_produkt [1.0; 2.0; 3.0] [4.0; 5.0; 6.0]
  vektorja.
 [*----------------------------------------------------------------------------*)
 
-let norma _ = ()
+let norma v = 
+  let kvadrat x = x *. x in
+  List.map kvadrat v
+  |> vsota_seznama
+  |> sqrt
 
 let primer_vektorji_4 = norma [3.0; 4.0]
 (* val primer_vektorji_4 : float = 5. *)
@@ -55,7 +64,10 @@ let primer_vektorji_4 = norma [3.0; 4.0]
  kot med dvema vektorjema v radianih.
 [*----------------------------------------------------------------------------*)
 
-let vmesni_kot _ _ = ()
+let vmesni_kot a b = 
+  let stevec = skalarni_produkt a b in
+  let imenovalec = norma a *. norma b in
+  acos (stevec /. imenovalec)
 
 let primer_vektorji_5 = vmesni_kot [1.0; 0.0] [0.0; 1.0]
 (* val primer_vektorji_5 : float = 1.57079632679489656 *)
@@ -65,8 +77,10 @@ let primer_vektorji_5 = vmesni_kot [1.0; 0.0] [0.0; 1.0]
  vektor.
 [*----------------------------------------------------------------------------*)
 
-let normirani _ = ()
-
+let normirani v = 
+  let dolzina = norma v in
+  List.map (fun x -> x /. dolzina) v
+let normirani2 v = razteg (1. /. norma v) v
 let primer_vektorji_6 = normirani [3.0; 4.0]
 (* val primer_vektorji_6 : float list = [0.600000000000000089; 0.8] *)
 
@@ -75,7 +89,10 @@ let primer_vektorji_6 = normirani [3.0; 4.0]
  izračuna projekcijo prvega vektorja na drugega.
 [*----------------------------------------------------------------------------*)
 
-let projekcija _ _ = ()
+let projekcija prvi drugi = 
+  let stevec = skalarni_produkt prvi drugi in
+  let imenovalec = norma drugi *. norma drugi in
+  List.map (fun x -> x *. (stevec /. imenovalec)) drugi
 
 let primer_vektorji_7 = projekcija [3.0; 4.0] [1.0; 0.0]
 (* val primer_vektorji_7 : float list = [3.; 0.] *)
@@ -89,7 +106,7 @@ let primer_vektorji_7 = projekcija [3.0; 4.0] [1.0; 0.0]
  oznake in vsebino ter vrne niz, ki predstavlja ustrezno HTML oznako.
 [*----------------------------------------------------------------------------*)
 
-let ovij _ _ = ()
+let ovij oznaka vsebina = "<" ^ oznaka ^ ">" ^ vsebina ^ "</" ^ oznaka ^ ">"
 
 let primer_html_1 = ovij "h1" "Hello, world!"
 (* val primer_html_1 : string = "<h1>Hello, world!</h1>" *)
@@ -100,8 +117,16 @@ let primer_html_1 = ovij "h1" "Hello, world!"
  ustrezno število presledkov.
 [*----------------------------------------------------------------------------*)
 
-let zamakni _ _ = ()
-
+let zamakni zamik niz = 
+  let presledki = String.make zamik ' ' in
+  let vrstice = String.split_on_char '\n' niz in
+  let zamaknjene_vrstice = List.map (fun vrstica -> presledki ^ vrstica) vrstice in
+  String.concat "\n" zamaknjene_vrstice
+let zamakni2 zamik niz = 
+  niz 
+  |> String.split_on_char '\n'
+  |> List.map (fun vrstica -> String.make zamik ' ' ^ vrstica)
+  |> String.concat "\n"
 let primer_html_2 = zamakni 4 "Hello,\nworld!"
 (* val primer_html_2 : string = "    Hello,\n    world!" *)
 
@@ -110,7 +135,9 @@ let primer_html_2 = zamakni 4 "Hello,\nworld!"
  niz, ki predstavlja ustrezno zamaknjen neurejeni seznam v HTML-ju:
 [*----------------------------------------------------------------------------*)
 
-let ul _ = ()
+let ul seznam_nizov = 
+  let li_elementi = List.map (fun niz -> ovij "li" niz) seznam_nizov in
+  String.concat "\n" li_elementi
 
 let primer_html_3 = ul ["ananas"; "banana"; "čokolada"]
 (* val primer_html_3 : string =
@@ -125,8 +152,16 @@ let primer_html_3 = ul ["ananas"; "banana"; "čokolada"]
  niz, ki vsebuje vejico, loči na del pred in del za njo.
 [*----------------------------------------------------------------------------*)
 
-let razdeli_vrstico _ = ()
-
+let razdeli_vrstico niz = 
+  let deli = String.split_on_char ',' niz in
+  match deli with
+  | [pred; za] -> (String.trim pred, String.trim za)
+  | _ -> failwith "Napačna oblika vrstice"
+let razdeli_vrstico2 niz = 
+  let vejica = String.index niz ',' in
+  let levi = String.sub niz 0 vejica in
+  let desni = String.sub niz (vejica + 1) (String.length niz - vejica - 1) in
+  levi, desni
 let primer_seznam_1 = razdeli_vrstico "mleko, 2"
 (* val primer_seznam_1 : string * string = ("mleko", "2") *)
 
@@ -136,8 +171,12 @@ let primer_seznam_1 = razdeli_vrstico "mleko, 2"
  vrednost"`, in vrne seznam ustreznih parov.
 [*----------------------------------------------------------------------------*)
 
-let pretvori_v_seznam_parov _ = ()
-
+let pretvori_v_seznam_parov niz = 
+  let vrstice = String.split_on_char '\n' niz in
+  List.map razdeli_vrstico vrstice
+let pretvori_v_seznam_parov2 niz = 
+  String.split_on_char '\n' niz
+  |> List.map razdeli_vrstico
 let primer_seznam_2 = pretvori_v_seznam_parov "mleko, 2\nkruh, 1\njabolko, 5"
 (* val primer_seznam_2 : (string * string) list =
   [("mleko", "2"); ("kruh", "1"); ("jabolko", "5")] *)
@@ -148,7 +187,8 @@ let primer_seznam_2 = pretvori_v_seznam_parov "mleko, 2\nkruh, 1\njabolko, 5"
  elementov seznama.
 [*----------------------------------------------------------------------------*)
 
-let pretvori_druge_komponente _ _ = ()
+let pretvori_druge_komponente f seznam = 
+  List.map (fun (x, y) -> (x, f y)) seznam
 
 let primer_seznam_3 =
   let seznam = [("ata", "mama"); ("teta", "stric")] in
@@ -161,7 +201,20 @@ let primer_seznam_3 =
  znesek nakupa.
 [*----------------------------------------------------------------------------*)
 
-let izracunaj_skupni_znesek _ _ = ()
+let izracunaj_skupni_znesek cenik nakupovalni_seznam = 
+  let seznam_cen = pretvori_v_seznam_parov cenik in
+  let seznam_nakupov = pretvori_v_seznam_parov nakupovalni_seznam in
+  let seznam_cen_float = pretvori_druge_komponente float_of_string seznam_cen in
+  let seznam_nakupov_float = pretvori_druge_komponente float_of_string seznam_nakupov in
+  let rec najdi_ceno izdelek = function
+    | [] -> failwith ("Izdelek " ^ izdelek ^ " ni v ceniku")
+    | (ime, cena) :: _ when ime = izdelek -> cena
+    | _ :: ostalo -> najdi_ceno izdelek ostalo
+  in
+  List.fold_left (fun acc (izdelek, kolicina) ->
+    let cena = najdi_ceno izdelek seznam_cen_float in
+    acc +. (cena *. kolicina)
+  ) 0.0 seznam_nakupov_float
 
 let primer_seznam_4 = 
   let nakupovalni_seznam = "mleko, 2\njabolka, 5"

@@ -19,13 +19,13 @@
  Namig: Občudujte informativnost tipov funkcij.
 [*----------------------------------------------------------------------------*)
 
-type euro 
+type euro = Euro of float
 
-type dollar 
+type dollar = Dollar of float
 
-let dollar_to_euro _ = ()
+let dollar_to_euro (Dollar number_of_dollars) = Euro (number_of_dollars *. 0.861)
 
-let euro_to_dollar _ = ()
+let euro_to_dollar (Euro number_of_euros) = Dollar (number_of_euros *. 1.161)
 
 (* let primer_valute_1 = dollar_to_euro (Dollar 0.5) *)
 (* val primer_valute_1 : euro = Euro 0.4305 *)

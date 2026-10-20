@@ -39,9 +39,13 @@ let euro_to_dollar (Euro number_of_euros) = Dollar (number_of_euros *. 1.161)
  Ocaml sam opozori, da je potrebno popraviti funkcijo `to_pound`.
 [*----------------------------------------------------------------------------*)
 
-type currency 
+type currency = Yen of float | Pound of float | Krona of float
 
-let to_pound _ = ()
+let to_pound valuta = 
+  match valuta with
+  | Yen valuta -> Pound (0.0047 *. valuta)
+  | Pound valuta -> Pound valuta
+  | Krona valuta -> Pound (0.076 *. valuta)
 
 (* let primer_valute_2 = to_pound (Yen 100.) *)
 (* val primer_valute_2 : currency = Pound 0.700000000000000067 *)
@@ -112,9 +116,8 @@ let rec intbool_separate _ = ()
  tip `specialisation`, ki loči med temi zaposlitvami.
 [*----------------------------------------------------------------------------*)
 
-type magic 
-
-type specialisation 
+type magic = Fire | Frost | Arcane
+type specialisation = Historian | Teacher | Researcher
 
 (*----------------------------------------------------------------------------*
  Vsak od čarodejev začne kot začetnik, nato na neki točki postane študent, na
@@ -130,13 +133,16 @@ type specialisation
  `jaina`, ki je četrto leto študentka magije ledu.
 [*----------------------------------------------------------------------------*)
 
-type status 
+type status = 
+| Newbie 
+| Student of magic * int 
+| Employed of magic * specialisation
 
-type wizard 
+type wizard = { name : string; status : status }
 
-let professor  = ()
+let professor  = { name = "Professor"; status = Employed (Fire, Teacher) }
 
-let jaina  = ()
+let jaina  = { name = "Jaina"; status = Student (Frost, 4) }
 
 (*----------------------------------------------------------------------------*
  Želimo prešteti koliko uporabnikov posamezne od vrst magije imamo na akademiji.

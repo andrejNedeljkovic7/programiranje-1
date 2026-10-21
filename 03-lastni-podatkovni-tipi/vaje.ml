@@ -73,9 +73,12 @@ let to_pound valuta =
  Nato napišite testni primer, ki bi predstavljal `[5; true; false; 7]`.
 [*----------------------------------------------------------------------------*)
 
-type intbool_list 
+type intbool_list = 
+  | Nil 
+  | Cons_int of int * intbool_list 
+  | Cons_bool of bool * intbool_list
 
-let test = ()
+let test = Cons_int(5, Cons_bool(true, Cons_bool(false, Cons_int(7, Nil))))
 
 (*----------------------------------------------------------------------------*
  Funkcija `intbool_map f_int f_bool ib_list` preslika vrednosti `ib_list` v nov
@@ -83,14 +86,23 @@ let test = ()
  oz. `f_bool`.
 [*----------------------------------------------------------------------------*)
 
-let rec intbool_map _ _ _ = ()
+let rec intbool_map f_int f_bool ib_list = 
+  match ib_list with
+  | Nil -> Nil
+  | Cons_int (x, xs) -> Cons_int (f_int x, intbool_map f_int f_bool xs)
+  | Cons_bool (x, xs) -> Cons_bool (f_bool x, intbool_map f_int f_bool xs)
 
 (*----------------------------------------------------------------------------*
  Funkcija `intbool_reverse` obrne vrstni red elementov `intbool_list` seznama.
  Funkcija je repno rekurzivna.
 [*----------------------------------------------------------------------------*)
 
-let rec intbool_reverse _ = ()
+let rec intbool_reverse list = 
+  let rec aux acc = function
+    | Nil -> acc
+    | Cons_int (x, xs) -> aux (Cons_int (x, acc)) xs
+    | Cons_bool (x, xs) -> aux (Cons_bool (x, acc)) xs
+  in aux Nil list
 
 (*----------------------------------------------------------------------------*
  Funkcija `intbool_separate ib_list` loči vrednosti `ib_list` v par `list`
@@ -98,8 +110,15 @@ let rec intbool_reverse _ = ()
  vrednosti. Funkcija je repno rekurzivna in ohranja vrstni red elementov.
 [*----------------------------------------------------------------------------*)
 
-let rec intbool_separate _ = ()
-
+let rec intbool_separate list = 
+  match list with
+  | Nil -> ([], [])
+  | Cons_int (i, ib_list') ->
+      let ints, bools = intbool_separate ib_list' in
+      (i :: ints, bools)
+  | Cons_bool (b, ib_list') ->
+      let ints, bools = intbool_separate ib_list' in
+      (ints, b :: bools)
 (*----------------------------------------------------------------------------*
  ## Čarodeji
 
@@ -151,9 +170,13 @@ let jaina  = { name = "Jaina"; status = Student (Frost, 4) }
  nov števec s posodobljenim poljem glede na vrednost `magic`.
 [*----------------------------------------------------------------------------*)
 
-type magic_counter 
+type magic_counter = { fire : int; frost : int; arcane : int }
 
-let update _ _ = ()
+let update counter magic = 
+  match magic with
+  | Fire -> { counter with fire = counter.fire + 1 }
+  | Frost -> { counter with frost = counter.frost + 1 }
+  | Arcane -> { counter with arcane = counter.arcane + 1 }
 
 (* let primer_carovniki_1 = update {fire = 1; frost = 1; arcane = 1} Arcane *)
 (* val primer_carovniki_1 : magic_counter = {fire = 1; frost = 1; arcane = 2} *)
@@ -163,7 +186,11 @@ let update _ _ = ()
  različnih vrst magij.
 [*----------------------------------------------------------------------------*)
 
-let count_magic _ = ()
+let count_magic wizards = 
+  List.fold_left (fun counter wizard -> update counter (match wizard.status with
+    | Employed (magic, _) -> magic
+    | Student (magic, _) -> magic
+    | Newbie -> failwith "Unexpected status") ) { fire = 0; frost = 0; arcane = 0 } wizards
 
 (* let primer_carovniki_2 = count_magic [professor; professor; professor] *)
 (* val primer_carovniki_2 : magic_counter = {fire = 3; frost = 0; arcane = 0} *)
@@ -178,7 +205,14 @@ let count_magic _ = ()
  `None`.
 [*----------------------------------------------------------------------------*)
 
-let find_candidate _ _ _ = ()
+let find_candidate magic specialisation wizards = 
+  let rec find_helper = function
+    | [] -> None
+    | wizard :: rest ->
+        (match wizard.status with
+         | Student (m, years) when m = magic && years >= specialisation -> Some wizard.name
+         | _ -> find_helper rest)
+  in find_helper wizards
 
 (* let primer_carovniki_3 =
   find_candidate Frost Researcher [professor; jaina] *)
